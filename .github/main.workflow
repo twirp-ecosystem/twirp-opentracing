@@ -3,12 +3,18 @@ workflow "lint and test" {
   resolves = ["test"]
 }
 
+action "build" {
+  uses = "docker://golang:latest"
+  args = "script/build"
+}
+
 action "lint" {
   uses = "docker://golangci/golangci-lint"
+  args = "golangci-lint run"
 }
 
 action "test" {
   uses = "docker://golang:latest"
-  needs = ["lint"]
-  args = "go test -v -race ./..."
+  args = "script/test"
+  needs = ["build"]
 }

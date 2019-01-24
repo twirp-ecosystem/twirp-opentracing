@@ -2,26 +2,43 @@
 
 
 [[projects]]
-  digest = "1:9d7b1f07e44cada28e6160cb0a808ad2f71f32bd7114793fb0baa302db0e6229"
+  digest = "1:69148993c8baff35dbb0b5ec92eccb6b75b2b7255a4ad1257be38f51fff8f267"
+  name = "github.com/golang/protobuf"
+  packages = [
+    "jsonpb",
+    "proto",
+    "ptypes/struct",
+  ]
+  pruneopts = "UT"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
+
+[[projects]]
+  digest = "1:841fcba20c9b41a7519f3910b083d16be2c3479cc282859333fe07145c5b9a9a"
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
+    "ext",
     "log",
+    "mocktracer",
   ]
   pruneopts = "UT"
   revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
   version = "v1.0.2"
 
 [[projects]]
-  digest = "1:e6bc27de0bc721a29d3c40ea43e309f19618862a6aa01e6472dc1118c225f0f4"
+  branch = "make-twirptest-public"
+  digest = "1:4cbd90521742f1667ff32fbb530637200c59e0d795a6f9205c3cce21a64e0fee"
   name = "github.com/twitchtv/twirp"
   packages = [
     ".",
+    "ctxsetters",
     "internal/contextkeys",
+    "twirptest",
   ]
   pruneopts = "UT"
-  revision = "89e10d8c51c4ee477a43a6f817f1958b90fecff9"
-  version = "v5.5.1"
+  revision = "021adf6caa6d83be1e687bd487dee49363f194d7"
+  source = "github.com/iheanyi/twirp"
 
 [[projects]]
   branch = "master"
@@ -36,7 +53,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/opentracing/opentracing-go",
+    "github.com/opentracing/opentracing-go/mocktracer",
     "github.com/twitchtv/twirp",
+    "github.com/twitchtv/twirp/twirptest",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

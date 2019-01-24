@@ -10,11 +10,11 @@ action "build" {
 
 action "lint" {
   uses = "docker://golangci/golangci-lint"
-  args = "golangci-lint run"
+  args = "script/lint"
 }
 
 action "test" {
   uses = "docker://golang:latest"
   args = "script/test"
-  needs = ["build"]
+  needs = ["lint"]
 }

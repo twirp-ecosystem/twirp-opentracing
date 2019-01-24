@@ -1,3 +1,3 @@
 # OpenTracing Hooks for Twirp
 
-A simple OpenTracing hooks implementation for Twirp.
+The `ottwirp` package creates an OpenTracing Twirp hook to use in your server.

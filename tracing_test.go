@@ -16,7 +16,6 @@ import (
 )
 
 func TestTracingHooks(t *testing.T) {
-
 	tests := []struct {
 		desc         string
 		service      twirptest.Haberdasher

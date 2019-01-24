@@ -68,7 +68,6 @@ func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
 	// ResponseSent: Set the status code and mark the span as finished.
 	hooks.ResponseSent = func(ctx context.Context) {
 		span := ot.SpanFromContext(ctx)
-
 		if span != nil {
 			status, haveStatus := twirp.StatusCode(ctx)
 			code, err := strconv.ParseInt(status, 10, 64)
@@ -89,8 +88,7 @@ func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
 			span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Msg()))
 		}
 
-		// TODO: Set the error message and other stuff.
-		return nil
+		return ctx
 	}
 
 	return hooks

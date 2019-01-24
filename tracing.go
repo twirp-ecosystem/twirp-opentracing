@@ -13,8 +13,8 @@ const (
 	RequestReceivedEvent = "request.received"
 )
 
-// TODO: Add functional options for handling things such as logging status
-// codes, etc.
+// TODO: Add functional options for things such as filtering or maybe logging
+// custom fields?
 
 // NewOpenTracingServerHook provides a twirp.ServerHooks struct which records
 // OpenTracing spans.

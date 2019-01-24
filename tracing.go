@@ -2,6 +2,7 @@ package ottwirp
 
 import (
 	"context"
+	"strconv"
 
 	ot "github.com/opentracing/opentracing-go"
 	"github.com/twitchtv/twirp"
@@ -67,13 +68,13 @@ func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
 	hooks.ResponseSent = func(ctx context.Context) {
 		span := ot.SpanFromContext(ctx)
 
-		status, haveStatus := twirp.StatusCode(ctx)
-
 		if span != nil {
-			if haveStatus {
+			status, haveStatus := twirp.StatusCode(ctx)
+			code, err := strconv.ParseInt(status, 10, 64)
+			if haveStatus && err == nil {
 				// TODO: Check the status code, if it's a non-2xx/3xx status code, we
 				// should probably mark it as an error of sorts.
-				span.SetTag("http.status_code", status)
+				span.SetTag("http.status_code", code)
 			}
 
 			span.Finish()
@@ -85,7 +86,8 @@ func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
 		if span != nil {
 			span.SetTag("error", true)
 		}
-		// TODO: Set an error simply on the span.
+
+		// TODO: Set the error message and other stuff.
 		return nil
 	}
 

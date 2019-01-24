@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	ot "github.com/opentracing/opentracing-go"
+	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/twitchtv/twirp"
 )
 
@@ -85,6 +86,7 @@ func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
 		span := ot.SpanFromContext(ctx)
 		if span != nil {
 			span.SetTag("error", true)
+			span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Msg()))
 		}
 
 		// TODO: Set the error message and other stuff.

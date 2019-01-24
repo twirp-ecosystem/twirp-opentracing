@@ -16,7 +16,7 @@ func TestTracingHooks(t *testing.T) {
 	tracer := setupMockTracer()
 	hooks := NewOpenTracingServerHook(tracer)
 
-	server, client := serverAndClient(hooks)
+	server, client := serverAndClient(twirptest.NoopHatmaker(), hooks)
 	defer server.Close()
 
 	_, err := client.MakeHat(context.Background(), &twirptest.Size{})
@@ -37,8 +37,8 @@ func TestTracingHooks(t *testing.T) {
 	assert.Equal(t, "MakeHat", rawSpan.OperationName, "expected operatino name to be MakeHat")
 }
 
-func serverAndClient(hooks *twirp.ServerHooks) (*httptest.Server, twirptest.Haberdasher) {
-	return twirptest.ServerAndClient(twirptest.NoopHatmaker(), hooks)
+func serverAndClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks) (*httptest.Server, twirptest.Haberdasher) {
+	return twirptest.ServerAndClient(h, hooks)
 }
 
 func setupMockTracer() *mocktracer.MockTracer {

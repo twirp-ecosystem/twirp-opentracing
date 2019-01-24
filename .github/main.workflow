@@ -1,6 +1,6 @@
 workflow "lint and test" {
   on = "push"
-  resolves = ["test"]
+  resolves = ["test", "lint"]
 }
 
 action "build" {
@@ -16,5 +16,4 @@ action "lint" {
 action "test" {
   uses = "docker://golang:latest"
   args = "script/test"
-  needs = ["lint"]
 }

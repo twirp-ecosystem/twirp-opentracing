@@ -81,6 +81,8 @@ func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
 		}
 	}
 
+	// Error: Set "error" as true and log the error event and the human readable
+	// error message.
 	hooks.Error = func(ctx context.Context, err twirp.Error) context.Context {
 		span := ot.SpanFromContext(ctx)
 		if span != nil {

@@ -28,6 +28,7 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 		span, ctx := ot.StartSpanFromContext(ctx, RequestReceivedEvent)
 		if span != nil {
 			span.SetTag("component", "twirp")
+			span.SetTag("span.kind", "server")
 
 			packageName, havePackageName := twirp.PackageName(ctx)
 			if havePackageName {
@@ -38,8 +39,6 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 			if haveServiceName {
 				span.SetTag("service", serviceName)
 			}
-
-			span.SetTag("span.kind", "server")
 		}
 
 		return ctx, nil

@@ -6,7 +6,9 @@ The `ottwirp` package creates an OpenTracing Twirp hook to use in your server.
 
 `go get -u github.com/iheanyi/twirp-opentracing`
 
-## Server-Side Usage Example
+## Server-side usage example
+
+Where you are instantiating your Twirp server:
 
 ```go
 var tracer opentracing.Tracer = ...

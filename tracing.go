@@ -16,9 +16,9 @@ const (
 // TODO: Add functional options for things such as filtering or maybe logging
 // custom fields?
 
-// NewOpenTracingServerHook provides a twirp.ServerHooks struct which records
+// NewOpenTracingHooks provides a twirp.ServerHooks struct which records
 // OpenTracing spans.
-func NewOpenTracingServerHook(tracer ot.Tracer) *twirp.ServerHooks {
+func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 	// TODO: Determine if setting this global tracer here is a good idea or should
 	// be left up to the user.
 	ot.SetGlobalTracer(tracer)

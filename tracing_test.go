@@ -69,7 +69,7 @@ func TestTracingHooks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			tracer := setupMockTracer()
-			hooks := NewOpenTracingServerHook(tracer)
+			hooks := NewOpenTracingHooks(tracer)
 
 			server, client := serverAndClient(tt.service, hooks)
 			defer server.Close()

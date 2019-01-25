@@ -24,7 +24,7 @@ func TestTracingHooks(t *testing.T) {
 		errExpected  bool
 	}{
 		{
-			desc:    "sets tags with operation name for a valid requestS",
+			desc:    "sets tags with operation name for a valid requests",
 			service: twirptest.NoopHatmaker(),
 			expectedTags: map[string]interface{}{
 				"package":          "twirp.twirptest",

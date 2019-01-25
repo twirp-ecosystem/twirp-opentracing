@@ -6,5 +6,4 @@ TODOs:
 
 - [ ] Add Installation instructions to README
 - [ ] Documentation
-- [ ] Setup CI
 - [ ] Server-Side Usage Example

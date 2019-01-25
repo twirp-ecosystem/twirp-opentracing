@@ -19,10 +19,6 @@ const (
 // NewOpenTracingHooks provides a twirp.ServerHooks struct which records
 // OpenTracing spans.
 func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
-	// TODO: Determine if setting this global tracer here is a good idea or should
-	// be left up to the user.
-	ot.SetGlobalTracer(tracer)
-
 	hooks := &twirp.ServerHooks{}
 
 	// RequestReceived: Create the initial span that we will use for the duration

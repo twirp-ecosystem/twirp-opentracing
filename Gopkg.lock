@@ -59,8 +59,8 @@
   version = "v1.3.0"
 
 [[projects]]
-  branch = "make-twirptest-public"
-  digest = "1:3d51c30bfe143674cc5f5d98ad24aef1bcefecb383d8e5495960a2b52cc1129b"
+  branch = "master"
+  digest = "1:ec1f91ac0966e55a7606ec564d04e3e3fe20631dd1df688117c2fa616e3b6d4f"
   name = "github.com/twitchtv/twirp"
   packages = [
     ".",
@@ -68,8 +68,7 @@
     "internal/contextkeys",
   ]
   pruneopts = "UT"
-  revision = "021adf6caa6d83be1e687bd487dee49363f194d7"
-  source = "github.com/iheanyi/twirp"
+  revision = "d91627be6d545d2f5a5249784aee38d0e0b60e41"
 
 [[projects]]
   branch = "master"

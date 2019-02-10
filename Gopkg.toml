@@ -31,8 +31,7 @@
 
 [[constraint]]
   name = "github.com/twitchtv/twirp"
-  source = "github.com/iheanyi/twirp"
-  branch = "make-twirptest-public"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"

@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/iheanyi/twirptest"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/mocktracer"
 	"github.com/stretchr/testify/assert"
 	"github.com/twitchtv/twirp"
-	"github.com/twitchtv/twirp/twirptest"
 )
 
 func TestTracingHooks(t *testing.T) {
@@ -27,7 +27,7 @@ func TestTracingHooks(t *testing.T) {
 			desc:    "sets tags with operation name for a valid requests",
 			service: twirptest.NoopHatmaker(),
 			expectedTags: map[string]interface{}{
-				"package":          "twirp.twirptest",
+				"package":          "twirptest",
 				"component":        "twirp",
 				"service":          "Haberdasher",
 				"span.kind":        "server",
@@ -39,7 +39,7 @@ func TestTracingHooks(t *testing.T) {
 			desc:    "set tags and logs with operation name for an errored request",
 			service: twirptest.ErroringHatmaker(errors.New("test")),
 			expectedTags: map[string]interface{}{
-				"package":          "twirp.twirptest",
+				"package":          "twirptest",
 				"component":        "twirp",
 				"service":          "Haberdasher",
 				"span.kind":        "server",

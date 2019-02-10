@@ -22,6 +22,14 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:12a4d93c4d6f87080617c6e0f24ef92cd4cb35a7cc81ed74ab05f8a5715eb2df"
+  name = "github.com/iheanyi/twirptest"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d412973a002f918785bd885d53f876127cdea0c4"
+
+[[projects]]
   digest = "1:841fcba20c9b41a7519f3910b083d16be2c3479cc282859333fe07145c5b9a9a"
   name = "github.com/opentracing/opentracing-go"
   packages = [
@@ -52,13 +60,12 @@
 
 [[projects]]
   branch = "make-twirptest-public"
-  digest = "1:4cbd90521742f1667ff32fbb530637200c59e0d795a6f9205c3cce21a64e0fee"
+  digest = "1:3d51c30bfe143674cc5f5d98ad24aef1bcefecb383d8e5495960a2b52cc1129b"
   name = "github.com/twitchtv/twirp"
   packages = [
     ".",
     "ctxsetters",
     "internal/contextkeys",
-    "twirptest",
   ]
   pruneopts = "UT"
   revision = "021adf6caa6d83be1e687bd487dee49363f194d7"
@@ -76,12 +83,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/iheanyi/twirptest",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/log",
     "github.com/opentracing/opentracing-go/mocktracer",
     "github.com/stretchr/testify/assert",
     "github.com/twitchtv/twirp",
-    "github.com/twitchtv/twirp/twirptest",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

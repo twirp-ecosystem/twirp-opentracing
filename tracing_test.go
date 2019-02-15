@@ -3,6 +3,7 @@ package ottwirp
 import (
 	"context"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
@@ -10,6 +11,8 @@ import (
 
 	"github.com/iheanyi/twirptest"
 	opentracing "github.com/opentracing/opentracing-go"
+	ot "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/mocktracer"
 	"github.com/stretchr/testify/assert"
 	"github.com/twitchtv/twirp"
@@ -91,8 +94,47 @@ func TestTracingHooks(t *testing.T) {
 	}
 }
 
+func TestClientSpanInjection(t *testing.T) {
+	tracer := setupMockTracer()
+	hooks := NewOpenTracingHooks(tracer)
+
+	server, client := TraceServerAndClient(twirptest.NoopHatmaker(), hooks, tracer)
+	defer server.Close()
+
+	span, ctx := ot.StartSpanFromContext(context.Background(), "TestClientSpanInjection", ext.SpanKindRPCClient)
+	ctx, err := InjectClientSpan(ctx, span)
+	if err != nil {
+		t.Fatalf("error injecting span, err=%q", err)
+	}
+
+	// Check Trace Headers
+	header, _ := twirp.HTTPRequestHeaders(ctx)
+	assert.Regexp(t, "\\d+", header["Mockpfx-Ids-Spanid"], "Mockpfx-Ids-Spanid")
+	assert.Regexp(t, "\\d+", header["Mockpfx-Ids-Traceid"], "Mockpfx-Ids-Traceid")
+	assert.Equal(t, []string{"true"}, header["Mockpfx-Ids-Sampled"], "Mockpfx-Ids-Sampled")
+
+	_, err = client.MakeHat(ctx, &twirptest.Size{})
+	if err != nil {
+		t.Fatalf("twirptest client err=%q", err)
+	}
+	span.Finish()
+	clientSpan := tracer.FinishedSpans()[1]
+	serverSpan := tracer.FinishedSpans()[0]
+	expectedTags := map[string]interface{}{
+		"span.kind": ext.SpanKindEnum("client"),
+	}
+	assert.Equal(t, expectedTags, clientSpan.Tags(), "expected tags to match")
+	assert.Equal(t, serverSpan.SpanContext.TraceID, clientSpan.SpanContext.TraceID, "expected span to propagate properly")
+}
+
 func serverAndClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks) (*httptest.Server, twirptest.Haberdasher) {
 	return twirptest.ServerAndClient(h, hooks)
+}
+
+func TraceServerAndClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks, tracer opentracing.Tracer) (*httptest.Server, twirptest.Haberdasher) {
+	s := httptest.NewServer(WithTraceContext(twirptest.NewHaberdasherServer(h, hooks), tracer))
+	c := twirptest.NewHaberdasherProtobufClient(s.URL, http.DefaultClient)
+	return s, c
 }
 
 func setupMockTracer() *mocktracer.MockTracer {

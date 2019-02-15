@@ -2,6 +2,7 @@ package ottwirp
 
 import (
 	"context"
+	"net/http"
 	"strconv"
 
 	ot "github.com/opentracing/opentracing-go"
@@ -12,6 +13,10 @@ import (
 
 const (
 	RequestReceivedEvent = "request.received"
+)
+
+const (
+	TracingInfoKey = "tracing-info"
 )
 
 // TODO: Add functional options for things such as filtering or maybe logging
@@ -99,8 +104,37 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 	return hooks
 }
 
+// InjectSpan can be called by the client-side
+func InjectClientSpan(ctx context.Context, span ot.Span) (context.Context, error) {
+	header, ok := twirp.HTTPRequestHeaders(ctx)
+	if !ok {
+		header = http.Header{}
+	}
+
+	tracer := ot.GlobalTracer()
+	tracer.Inject(span.Context(),
+		ot.HTTPHeaders,
+		ot.HTTPHeadersCarrier(header),
+	)
+
+	return twirp.WithHTTPRequestHeaders(ctx, header)
+}
+
+// WithTraceContext wraps the handler and extracts the span context from request
+// headers to attach to the context for connecting client and server calls
+// together.
+func WithTraceContext(base http.Handler, tracer ot.Tracer) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		carrier := ot.HTTPHeadersCarrier(r.Header)
+		ctx = context.WithValue(ctx, TracingInfoKey, carrier)
+		r = r.WithContext(ctx)
+
+		base.ServeHTTP(w, r)
+	})
+}
+
 func extractSpanContext(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {
-	header, _ := twirp.HTTPRequestHeaders(ctx)
-	carrier := ot.HTTPHeadersCarrier(header)
+	carrier := ctx.Value(TracingInfoKey)
 	return tracer.Extract(ot.HTTPHeaders, carrier)
 }

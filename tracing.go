@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	ot "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	otlog "github.com/opentracing/opentracing-go/log"
 	"github.com/twitchtv/twirp"
 )
@@ -24,8 +25,15 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 	// RequestReceived: Create the initial span that we will use for the duration
 	// of the request.
 	hooks.RequestReceived = func(ctx context.Context) (context.Context, error) {
+		// Taken from: https://github.com/grpc-ecosystem/grpc-opentracing/blob/master/go/otgrpc/server.go#L93
+		spanContext, err := extractSpanContext(ctx, tracer)
+		if err != nil && err != ot.ErrSpanContextNotFound {
+			// TODO: establish some sort of error reporting mechanism here. We
+			// don't know where to put such an error and must rely on Tracer
+			// implementations to do something appropriate for the time being.
+		}
 		// Create the initial span, it won't have a method name just yet.
-		span, ctx := ot.StartSpanFromContext(ctx, RequestReceivedEvent)
+		span, ctx := ot.StartSpanFromContext(ctx, RequestReceivedEvent, ext.RPCServerOption(spanContext))
 		if span != nil {
 			span.SetTag("component", "twirp")
 			span.SetTag("span.kind", "server")
@@ -89,4 +97,10 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 	}
 
 	return hooks
+}
+
+func extractSpanContext(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {
+	header, _ := twirp.HTTPRequestHeaders(ctx)
+	carrier := ot.HTTPHeadersCarrier(header)
+	return tracer.Extract(ot.HTTPHeaders, carrier)
 }

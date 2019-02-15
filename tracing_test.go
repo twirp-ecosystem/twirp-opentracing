@@ -124,7 +124,8 @@ func TestClientSpanInjection(t *testing.T) {
 		"span.kind": ext.SpanKindEnum("client"),
 	}
 	assert.Equal(t, expectedTags, clientSpan.Tags(), "expected tags to match")
-	assert.Equal(t, serverSpan.SpanContext.TraceID, clientSpan.SpanContext.TraceID, "expected span to propagate properly")
+	assert.Equal(t, serverSpan.SpanContext.TraceID, clientSpan.SpanContext.TraceID, "expected trace to propagate properly")
+	assert.Equal(t, serverSpan.ParentID, clientSpan.SpanContext.SpanID, "expected span to propagate properly")
 }
 
 func serverAndClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks) (*httptest.Server, twirptest.Haberdasher) {

@@ -15,9 +15,7 @@ const (
 	RequestReceivedEvent = "request.received"
 )
 
-const (
-	TracingInfoKey = "tracing-info"
-)
+type tracingInfoKey struct{}
 
 // TODO: Add functional options for things such as filtering or maybe logging
 // custom fields?
@@ -127,7 +125,7 @@ func WithTraceContext(base http.Handler, tracer ot.Tracer) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		carrier := ot.HTTPHeadersCarrier(r.Header)
-		ctx = context.WithValue(ctx, TracingInfoKey, carrier)
+		ctx = context.WithValue(ctx, tracingInfoKey{}, carrier)
 		r = r.WithContext(ctx)
 
 		base.ServeHTTP(w, r)
@@ -135,6 +133,6 @@ func WithTraceContext(base http.Handler, tracer ot.Tracer) http.Handler {
 }
 
 func extractSpanContext(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {
-	carrier := ctx.Value(TracingInfoKey)
+	carrier := ctx.Value(tracingInfoKey{})
 	return tracer.Extract(ot.HTTPHeaders, carrier)
 }

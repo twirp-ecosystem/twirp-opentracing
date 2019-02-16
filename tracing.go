@@ -110,12 +110,19 @@ func InjectClientSpan(ctx context.Context, span ot.Span) (context.Context, error
 	}
 
 	tracer := ot.GlobalTracer()
-	tracer.Inject(span.Context(),
+	err := tracer.Inject(span.Context(),
 		ot.HTTPHeaders,
 		ot.HTTPHeadersCarrier(header),
 	)
+	if err != nil {
+		span.LogFields(otlog.String("event", "tracer.Inject() failed"), otlog.Error(err))
+	}
 
-	return twirp.WithHTTPRequestHeaders(ctx, header)
+	if !ok {
+		return twirp.WithHTTPRequestHeaders(ctx, header)
+	}
+
+	return ctx, nil
 }
 
 // WithTraceContext wraps the handler and extracts the span context from request

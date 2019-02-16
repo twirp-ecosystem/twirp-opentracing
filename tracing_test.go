@@ -19,6 +19,7 @@ import (
 )
 
 func TestTracingHooks(t *testing.T) {
+	serverType := ext.SpanKindEnum("server")
 	tests := []struct {
 		desc         string
 		service      twirptest.Haberdasher
@@ -33,7 +34,7 @@ func TestTracingHooks(t *testing.T) {
 				"package":          "twirptest",
 				"component":        "twirp",
 				"service":          "Haberdasher",
-				"span.kind":        "server",
+				"span.kind":        serverType,
 				"http.status_code": int64(200),
 			},
 			expectedLogs: []mocktracer.MockLogRecord{},
@@ -45,7 +46,7 @@ func TestTracingHooks(t *testing.T) {
 				"package":          "twirptest",
 				"component":        "twirp",
 				"service":          "Haberdasher",
-				"span.kind":        "server",
+				"span.kind":        serverType,
 				"http.status_code": int64(500),
 				"error":            true,
 			},

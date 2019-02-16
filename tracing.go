@@ -36,10 +36,9 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 			// implementations to do something appropriate for the time being.
 		}
 		// Create the initial span, it won't have a method name just yet.
-		span, ctx := ot.StartSpanFromContext(ctx, RequestReceivedEvent, ext.RPCServerOption(spanContext))
+		span, ctx := ot.StartSpanFromContext(ctx, RequestReceivedEvent, ext.RPCServerOption(spanContext), ext.SpanKindRPCServer)
 		if span != nil {
 			span.SetTag("component", "twirp")
-			span.SetTag("span.kind", "server")
 
 			packageName, havePackageName := twirp.PackageName(ctx)
 			if havePackageName {

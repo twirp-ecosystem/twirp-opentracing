@@ -30,7 +30,7 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 	hooks.RequestReceived = func(ctx context.Context) (context.Context, error) {
 		// Taken from: https://github.com/grpc-ecosystem/grpc-opentracing/blob/master/go/otgrpc/server.go#L93
 		spanContext, err := extractSpanContext(ctx, tracer)
-		if err != nil && err != ot.ErrSpanContextNotFound {
+		if err != nil && err != ot.ErrSpanContextNotFound { // nolint: megacheck, staticcheck
 			// TODO: establish some sort of error reporting mechanism here. We
 			// don't know where to put such an error and must rely on Tracer
 			// implementations to do something appropriate for the time being.

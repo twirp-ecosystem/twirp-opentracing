@@ -40,6 +40,10 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 		opentracing.HTTPHeaders,
 		opentracing.HTTPHeadersCarrier(req.Header),
 	)
+	if err != nil {
+		span.LogFields(otlog.String("event", "tracer.Inject() failed"), otlog.Error(err))
+	}
+
 	req = req.WithContext(ctx)
 
 	res, err := c.client.Do(req)

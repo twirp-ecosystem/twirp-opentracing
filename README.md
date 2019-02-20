@@ -23,6 +23,8 @@ log.Fatal(http.ListenAndServe(":8080", server))
 
 ## Client-side usage example
 
+When instantiating your Twirp client:
+
 ```go
 var tracer opentracing.Tracer = ...
 

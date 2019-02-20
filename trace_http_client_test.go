@@ -59,11 +59,6 @@ func TestTraceHTTPClient(t *testing.T) {
 							ValueKind:   reflect.String,
 							ValueString: "error",
 						},
-						{
-							Key:         "message",
-							ValueKind:   reflect.String,
-							ValueString: "test",
-						},
 					},
 				},
 			},

@@ -101,30 +101,6 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 	return hooks
 }
 
-// InjectClientSpan is used for injecting the SpanContext into the request
-// headers.
-func InjectClientSpan(ctx context.Context, span ot.Span) (context.Context, error) {
-	header, ok := twirp.HTTPRequestHeaders(ctx)
-	if !ok {
-		header = http.Header{}
-	}
-
-	tracer := ot.GlobalTracer()
-	err := tracer.Inject(span.Context(),
-		ot.HTTPHeaders,
-		ot.HTTPHeadersCarrier(header),
-	)
-	if err != nil {
-		span.LogFields(otlog.String("event", "tracer.Inject() failed"), otlog.Error(err))
-	}
-
-	if !ok {
-		return twirp.WithHTTPRequestHeaders(ctx, header)
-	}
-
-	return ctx, nil
-}
-
 // WithTraceContext wraps the handler and extracts the span context from request
 // headers to attach to the context for connecting client and server calls.
 func WithTraceContext(base http.Handler, tracer ot.Tracer) http.Handler {

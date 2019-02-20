@@ -75,18 +75,21 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 	// We want to track when the body is closed, meaning the server is done with
 	// the response.
-	res.Body = closer{res.Body, span}
+	res.Body = closer{
+		ReadCloser: res.Body,
+		span:       span,
+	}
 	return res, nil
 }
 
 type closer struct {
 	io.ReadCloser
-	sp opentracing.Span
+	span opentracing.Span
 }
 
 func (c closer) Close() error {
 	err := c.ReadCloser.Close()
-	c.sp.Finish()
+	c.span.Finish()
 	return err
 }
 

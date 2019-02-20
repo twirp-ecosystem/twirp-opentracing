@@ -23,6 +23,8 @@ func NewTraceHTTPClient(client *http.Client, tracer opentracing.Tracer) *TraceHT
 	}
 }
 
+// Do makes the HTTP request with the tracing headers injected into the request
+// and into the tracer itself.
 func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	methodName, ok := twirp.MethodName(ctx)
@@ -40,7 +42,6 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	if err != nil {
 		span.LogFields(otlog.String("event", "tracer.Inject() failed"), otlog.Error(err))
 	}
-
 	req = req.WithContext(ctx)
 
 	res, err := c.client.Do(req)
@@ -50,10 +51,10 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 		span.Finish()
 		return res, err
 	}
-	// Set the HTTP status code from the service.
 	ext.HTTPStatusCode.Set(span, uint16(res.StatusCode))
 
-	// We want to finish recording metrics once the body is read.
+	// We want to track when the body is closed, meaning the server is done with
+	// the response.
 	res.Body = closer{res.Body, span}
 	return res, nil
 }

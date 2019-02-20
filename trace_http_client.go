@@ -65,7 +65,9 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	// Check for error codes greater than 400, if we have these, then we should
 	// mark the span as an error.
 	if res.StatusCode >= 400 {
-		bodyBytes, err := ioutil.ReadAll(res.Body)
+		resCopy := new(http.Response)
+		*resCopy = *res
+		bodyBytes, err := ioutil.ReadAll(resCopy.Body)
 		if err != nil {
 			setErrorSpan(span, err.Error())
 		} else {

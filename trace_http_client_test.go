@@ -81,6 +81,8 @@ func TestTraceHTTPClient(t *testing.T) {
 			if err != nil {
 				if !tt.errExpected {
 					t.Fatalf("twirptest client err=%q", err)
+				} else {
+					assert.Error(t, err, "expected an error")
 				}
 			}
 			clientSpan := tracer.FinishedSpans()[1]

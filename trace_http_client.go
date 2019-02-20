@@ -25,12 +25,9 @@ func NewTraceHTTPClient(client *http.Client, tracer opentracing.Tracer) *TraceHT
 
 func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
-	// Check for a parent span context
-	// Then create a span as a child of if the span parent span is not nil
-	// SetOperationName to whatever is injected
 	methodName, ok := twirp.MethodName(ctx)
 	if !ok {
-		methodName = req.URL.String()
+		methodName = req.URL.Path
 	}
 	span, ctx := opentracing.StartSpanFromContext(ctx, methodName, ext.SpanKindRPCClient)
 	ext.HTTPMethod.Set(span, req.Method)

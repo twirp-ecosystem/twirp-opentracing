@@ -54,16 +54,16 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	ext.HTTPStatusCode.Set(span, uint16(res.StatusCode))
 
 	// We want to finish recording metrics once the body is read.
-	res.Body = closeTracker{res.Body, span}
+	res.Body = closer{res.Body, span}
 	return res, nil
 }
 
-type closeTracker struct {
+type closer struct {
 	io.ReadCloser
 	sp opentracing.Span
 }
 
-func (c closeTracker) Close() error {
+func (c closer) Close() error {
 	err := c.ReadCloser.Close()
 	c.sp.Finish()
 	return err

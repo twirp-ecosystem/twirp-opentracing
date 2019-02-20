@@ -25,6 +25,10 @@ type TraceHTTPClient struct {
 var _ HTTPClient = (*TraceHTTPClient)(nil)
 
 func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer) *TraceHTTPClient {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
 	return &TraceHTTPClient{
 		client: client,
 		tracer: tracer,

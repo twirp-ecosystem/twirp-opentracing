@@ -20,3 +20,13 @@ service := haberdasherserver.New()
 server := WithTraceContext(haberdasher.NewHaberdasherServer(service, hooks), tracer)
 log.Fatal(http.ListenAndServe(":8080", server))
 ```
+
+## Client-side usage example
+
+```go
+var tracer opentracing.Tracer = ...
+
+...
+
+client := haberdasher.NewHaberdasherProtobufClient(url, NewTraceHTTPClient(http.DefaultClient, tracer))
+```

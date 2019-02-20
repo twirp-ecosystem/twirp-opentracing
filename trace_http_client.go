@@ -16,19 +16,19 @@ type TraceHTTPClient struct {
 }
 
 func NewTraceHTTPClient(client *http.Client, tracer opentracing.Tracer) *TraceHTTPClient {
-	// Perhaps get the global tracer here?
 	return &TraceHTTPClient{
 		client: client,
 		tracer: tracer,
 	}
 }
 
-// Do makes the HTTP request with the tracing headers injected into the request
-// and into the tracer itself.
+// Do injects the tracing headers into the tracer and updates the headers before
+// making the actual request.
 func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	ctx := req.Context()
 	methodName, ok := twirp.MethodName(ctx)
 	if !ok {
+		// No method name, let's use the URL path instead then.
 		methodName = req.URL.Path
 	}
 	span, ctx := opentracing.StartSpanFromContext(ctx, methodName, ext.SpanKindRPCClient)

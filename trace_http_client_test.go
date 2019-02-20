@@ -2,14 +2,17 @@ package ottwirp
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/iheanyi/twirptest"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/opentracing/opentracing-go/mocktracer"
 	"github.com/stretchr/testify/assert"
 	"github.com/twitchtv/twirp"
 )
@@ -20,6 +23,7 @@ func TestTraceHTTPClient(t *testing.T) {
 		errExpected  bool
 		service      twirptest.Haberdasher
 		expectedTags func(*httptest.Server) map[string]interface{}
+		expectedLogs []mocktracer.MockLogRecord
 	}{
 		{
 			desc:        "properly traces valid requests",
@@ -32,6 +36,36 @@ func TestTraceHTTPClient(t *testing.T) {
 					"http.url":         fmt.Sprintf("%s/twirp/twirptest.Haberdasher/MakeHat", server.URL),
 					"http.method":      "POST",
 				}
+			},
+		},
+		{
+			desc:        "properly sets metadata for errors",
+			errExpected: true,
+			service:     twirptest.ErroringHatmaker(errors.New("test")),
+			expectedTags: func(server *httptest.Server) map[string]interface{} {
+				return map[string]interface{}{
+					"span.kind":        ext.SpanKindEnum("client"),
+					"error":            true,
+					"http.status_code": uint16(500),
+					"http.url":         fmt.Sprintf("%s/twirp/twirptest.Haberdasher/MakeHat", server.URL),
+					"http.method":      "POST",
+				}
+			},
+			expectedLogs: []mocktracer.MockLogRecord{
+				{
+					Fields: []mocktracer.MockKeyValue{
+						{
+							Key:         "event",
+							ValueKind:   reflect.String,
+							ValueString: "error",
+						},
+						{
+							Key:         "message",
+							ValueKind:   reflect.String,
+							ValueString: "test",
+						},
+					},
+				},
 			},
 		},
 	}

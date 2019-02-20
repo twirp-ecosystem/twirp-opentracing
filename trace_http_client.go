@@ -2,6 +2,7 @@ package ottwirp
 
 import (
 	"io"
+	"io/ioutil"
 	"net/http"
 
 	opentracing "github.com/opentracing/opentracing-go"
@@ -53,12 +54,22 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		span.SetTag("error", true)
-		span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Error()))
+		setErrorSpan(span, err.Error())
 		span.Finish()
 		return res, err
 	}
 	ext.HTTPStatusCode.Set(span, uint16(res.StatusCode))
+
+	// Check for error codes greater than 400, if we have these, then we should
+	// mark the span as an error.
+	if res.StatusCode >= 400 {
+		bodyBytes, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			setErrorSpan(span, err.Error())
+		}
+
+		setErrorSpan(span, string(bodyBytes))
+	}
 
 	// We want to track when the body is closed, meaning the server is done with
 	// the response.
@@ -75,4 +86,9 @@ func (c closer) Close() error {
 	err := c.ReadCloser.Close()
 	c.sp.Finish()
 	return err
+}
+
+func setErrorSpan(span opentracing.Span, errorMessage string) {
+	span.SetTag("error", true)
+	span.LogFields(otlog.String("event", "error"), otlog.String("message", errorMessage))
 }

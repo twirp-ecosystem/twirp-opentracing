@@ -10,6 +10,8 @@ import (
 	"github.com/twitchtv/twirp"
 )
 
+// TraceHTTPClient wraps a provided http.Client and tracer for instrumenting
+// requests.
 type TraceHTTPClient struct {
 	client *http.Client
 	tracer opentracing.Tracer

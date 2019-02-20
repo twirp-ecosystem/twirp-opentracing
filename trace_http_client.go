@@ -66,9 +66,9 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 		bodyBytes, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			setErrorSpan(span, err.Error())
+		} else {
+			setErrorSpan(span, string(bodyBytes))
 		}
-
-		setErrorSpan(span, string(bodyBytes))
 	}
 
 	// We want to track when the body is closed, meaning the server is done with

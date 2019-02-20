@@ -23,7 +23,9 @@ type TraceHTTPClient struct {
 	tracer opentracing.Tracer
 }
 
-func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer) HTTPClient {
+var _ HTTPClient = (*TraceHTTPClient)(nil)
+
+func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer) *TraceHTTPClient {
 	return &TraceHTTPClient{
 		client: client,
 		tracer: tracer,

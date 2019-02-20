@@ -10,14 +10,19 @@ import (
 	"github.com/twitchtv/twirp"
 )
 
+// Doer as the interface used to "Do" HTTP requests.
+type Doer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 // TraceHTTPClient wraps a provided http.Client and tracer for instrumenting
 // requests.
 type TraceHTTPClient struct {
-	client *http.Client
+	client Doer
 	tracer opentracing.Tracer
 }
 
-func NewTraceHTTPClient(client *http.Client, tracer opentracing.Tracer) *TraceHTTPClient {
+func NewTraceHTTPClient(client Doer, tracer opentracing.Tracer) Doer {
 	return &TraceHTTPClient{
 		client: client,
 		tracer: tracer,

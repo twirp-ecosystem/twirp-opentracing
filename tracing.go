@@ -23,12 +23,18 @@ type tracingInfoKey struct{}
 // NewOpenTracingHooks provides a twirp.ServerHooks struct which records
 // OpenTracing spans.
 func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
-	hooks := &twirp.ServerHooks{}
+	hooks := &twirp.ServerHooks{
+		RequestReceived: startTraceSpan(tracer),
+		RequestRouted:   handleRequestRouted,
+		ResponseSent:    finishTrace,
+		Error:           handleError,
+	}
 
-	// RequestReceived: Create the initial span that we will use for the duration
-	// of the request.
-	hooks.RequestReceived = func(ctx context.Context) (context.Context, error) {
-		// Taken from: https://github.com/grpc-ecosystem/grpc-opentracing/blob/master/go/otgrpc/server.go#L93
+	return hooks
+}
+
+func startTraceSpan(tracer ot.Tracer) func(context.Context) (context.Context, error) {
+	return func(ctx context.Context) (context.Context, error) {
 		spanContext, err := extractSpanContext(ctx, tracer)
 		if err != nil && err != ot.ErrSpanContextNotFound { // nolint: megacheck, staticcheck
 			// TODO: establish some sort of error reporting mechanism here. We
@@ -40,65 +46,45 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 		if span != nil {
 			span.SetTag("component", "twirp")
 
-			packageName, havePackageName := twirp.PackageName(ctx)
-			if havePackageName {
+			if packageName, ok := twirp.PackageName(ctx); ok {
 				span.SetTag("package", packageName)
 			}
 
-			serviceName, haveServiceName := twirp.ServiceName(ctx)
-			if haveServiceName {
+			if serviceName, ok := twirp.ServiceName(ctx); ok {
 				span.SetTag("service", serviceName)
 			}
 		}
 
 		return ctx, nil
 	}
+}
 
-	// RequestRouted: Set the operation name based on the MethodName extracted
-	// from span.
-	hooks.RequestRouted = func(ctx context.Context) (context.Context, error) {
-		span := ot.SpanFromContext(ctx)
-		if span != nil {
-			method, ok := twirp.MethodName(ctx)
-			if !ok {
-				return ctx, nil
-			}
-
+// handleRequestRouted sets the operation name because we won't know what it is
+// until the RequestRouted hook.
+func handleRequestRouted(ctx context.Context) (context.Context, error) {
+	span := ot.SpanFromContext(ctx)
+	if span != nil {
+		if method, ok := twirp.MethodName(ctx); ok {
 			span.SetOperationName(method)
 		}
-
-		return ctx, nil
 	}
 
-	// ResponseSent: Set the status code and mark the span as finished.
-	hooks.ResponseSent = func(ctx context.Context) {
-		span := ot.SpanFromContext(ctx)
-		if span != nil {
-			status, haveStatus := twirp.StatusCode(ctx)
-			code, err := strconv.ParseInt(status, 10, 64)
-			if haveStatus && err == nil {
-				// TODO: Check the status code, if it's a non-2xx/3xx status code, we
-				// should probably mark it as an error of sorts.
-				span.SetTag("http.status_code", code)
-			}
+	return ctx, nil
+}
 
-			span.Finish()
-		}
-	}
-
-	// Error: Set "error" as true and log the error event and the human readable
-	// error message.
-	hooks.Error = func(ctx context.Context, err twirp.Error) context.Context {
-		span := ot.SpanFromContext(ctx)
-		if span != nil {
-			span.SetTag("error", true)
-			span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Msg()))
+func finishTrace(ctx context.Context) {
+	span := ot.SpanFromContext(ctx)
+	if span != nil {
+		status, haveStatus := twirp.StatusCode(ctx)
+		code, err := strconv.ParseInt(status, 10, 64)
+		if haveStatus && err == nil {
+			// TODO: Check the status code, if it's a non-2xx/3xx status code, we
+			// should probably mark it as an error of sorts.
+			span.SetTag("http.status_code", code)
 		}
 
-		return ctx
+		span.Finish()
 	}
-
-	return hooks
 }
 
 // WithTraceContext wraps the handler and extracts the span context from request
@@ -112,6 +98,16 @@ func WithTraceContext(base http.Handler, tracer ot.Tracer) http.Handler {
 
 		base.ServeHTTP(w, r)
 	})
+}
+
+func handleError(ctx context.Context, err twirp.Error) context.Context {
+	span := ot.SpanFromContext(ctx)
+	if span != nil {
+		span.SetTag("error", true)
+		span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Msg()))
+	}
+
+	return ctx
 }
 
 func extractSpanContext(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {

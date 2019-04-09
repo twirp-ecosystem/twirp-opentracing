@@ -4,7 +4,7 @@ The `ottwirp` package creates an OpenTracing Twirp hook to use in your server.
 
 ## Installation
 
-`go get -u github.com/iheanyi/twirp-opentracing`
+`go get -u github.com/twirp-ecosystem/twirp-opentracing`
 
 ## Server-side usage example
 

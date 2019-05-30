@@ -35,11 +35,11 @@ func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
 
 func startTraceSpan(tracer ot.Tracer) func(context.Context) (context.Context, error) {
 	return func(ctx context.Context) (context.Context, error) {
-		spanContext, err := extractSpanContext(ctx, tracer)
+		spanContext, err := extractSpanCtx(ctx, tracer)
 		if err != nil && err != ot.ErrSpanContextNotFound { // nolint: megacheck, staticcheck
-			// TODO: establish some sort of error reporting mechanism here. We
-			// don't know where to put such an error and must rely on Tracer
-			// implementations to do something appropriate for the time being.
+			// TODO: We need to do error reporting here. The tracer implementation
+			// will have to do something because we don't know where this error will
+			// live.
 		}
 		// Create the initial span, it won't have a method name just yet.
 		span, ctx := ot.StartSpanFromContext(ctx, RequestReceivedEvent, ext.RPCServerOption(spanContext), ext.SpanKindRPCServer)
@@ -110,7 +110,7 @@ func handleError(ctx context.Context, err twirp.Error) context.Context {
 	return ctx
 }
 
-func extractSpanContext(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {
+func extractSpanCtx(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {
 	carrier := ctx.Value(tracingInfoKey{})
 	return tracer.Extract(ot.HTTPHeaders, carrier)
 }

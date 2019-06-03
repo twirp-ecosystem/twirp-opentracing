@@ -1,0 +1,23 @@
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/golang/protobuf v1.3.1
+github.com/golang/protobuf/jsonpb
+github.com/golang/protobuf/proto
+github.com/golang/protobuf/ptypes/struct
+# github.com/opentracing/opentracing-go v1.0.2
+github.com/opentracing/opentracing-go
+github.com/opentracing/opentracing-go/ext
+github.com/opentracing/opentracing-go/log
+github.com/opentracing/opentracing-go/mocktracer
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.3.0
+github.com/stretchr/testify/assert
+# github.com/twirp-ecosystem/twirptest v0.1.0
+github.com/twirp-ecosystem/twirptest
+# github.com/twitchtv/twirp v5.6.0+incompatible
+github.com/twitchtv/twirp
+github.com/twitchtv/twirp/internal/contextkeys
+github.com/twitchtv/twirp/ctxsetters
+# golang.org/x/net v0.0.0-20190119204137-ed066c81e75e
+golang.org/x/net/context

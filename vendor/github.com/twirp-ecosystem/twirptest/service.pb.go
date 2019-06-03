@@ -3,11 +3,9 @@
 
 package twirptest
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -33,17 +31,16 @@ func (m *Hat) Reset()         { *m = Hat{} }
 func (m *Hat) String() string { return proto.CompactTextString(m) }
 func (*Hat) ProtoMessage()    {}
 func (*Hat) Descriptor() ([]byte, []int) {
-	return fileDescriptor_a0b84a42fa06f626, []int{0}
+	return fileDescriptor_service_a6dca8583e7a578f, []int{0}
 }
-
 func (m *Hat) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Hat.Unmarshal(m, b)
 }
 func (m *Hat) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Hat.Marshal(b, m, deterministic)
 }
-func (m *Hat) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Hat.Merge(m, src)
+func (dst *Hat) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Hat.Merge(dst, src)
 }
 func (m *Hat) XXX_Size() int {
 	return xxx_messageInfo_Hat.Size(m)
@@ -86,17 +83,16 @@ func (m *Size) Reset()         { *m = Size{} }
 func (m *Size) String() string { return proto.CompactTextString(m) }
 func (*Size) ProtoMessage()    {}
 func (*Size) Descriptor() ([]byte, []int) {
-	return fileDescriptor_a0b84a42fa06f626, []int{1}
+	return fileDescriptor_service_a6dca8583e7a578f, []int{1}
 }
-
 func (m *Size) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Size.Unmarshal(m, b)
 }
 func (m *Size) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Size.Marshal(b, m, deterministic)
 }
-func (m *Size) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Size.Merge(m, src)
+func (dst *Size) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Size.Merge(dst, src)
 }
 func (m *Size) XXX_Size() int {
 	return xxx_messageInfo_Size.Size(m)
@@ -119,9 +115,9 @@ func init() {
 	proto.RegisterType((*Size)(nil), "twirptest.Size")
 }
 
-func init() { proto.RegisterFile("service.proto", fileDescriptor_a0b84a42fa06f626) }
+func init() { proto.RegisterFile("service.proto", fileDescriptor_service_a6dca8583e7a578f) }
 
-var fileDescriptor_a0b84a42fa06f626 = []byte{
+var fileDescriptor_service_a6dca8583e7a578f = []byte{
 	// 173 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2d, 0x4e, 0x2d, 0x2a,
 	0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x2c, 0x29, 0xcf, 0x2c, 0x2a,

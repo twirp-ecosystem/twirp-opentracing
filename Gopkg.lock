@@ -22,14 +22,6 @@
   version = "v1.2.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:12a4d93c4d6f87080617c6e0f24ef92cd4cb35a7cc81ed74ab05f8a5715eb2df"
-  name = "github.com/iheanyi/twirptest"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "d412973a002f918785bd885d53f876127cdea0c4"
-
-[[projects]]
   digest = "1:841fcba20c9b41a7519f3910b083d16be2c3479cc282859333fe07145c5b9a9a"
   name = "github.com/opentracing/opentracing-go"
   packages = [
@@ -59,6 +51,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:510facaef7fb175997ecb4db5f3d07f6eaf87a7ac1f3e480b51e1c5a0173fa4c"
+  name = "github.com/twirp-ecosystem/twirptest"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e46e24fcc5c6a4c99cbf9e67b2ea07e13e25cd71"
+  version = "v0.1.0"
+
+[[projects]]
   branch = "master"
   digest = "1:ec1f91ac0966e55a7606ec564d04e3e3fe20631dd1df688117c2fa616e3b6d4f"
   name = "github.com/twitchtv/twirp"
@@ -82,11 +82,12 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/iheanyi/twirptest",
     "github.com/opentracing/opentracing-go",
+    "github.com/opentracing/opentracing-go/ext",
     "github.com/opentracing/opentracing-go/log",
     "github.com/opentracing/opentracing-go/mocktracer",
     "github.com/stretchr/testify/assert",
+    "github.com/twirp-ecosystem/twirptest",
     "github.com/twitchtv/twirp",
   ]
   solver-name = "gps-cdcl"

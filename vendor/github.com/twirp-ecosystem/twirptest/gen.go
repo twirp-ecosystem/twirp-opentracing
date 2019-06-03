@@ -13,4 +13,4 @@
 
 package twirptest
 
-//go:generate internal/protoc_gen.sh service.proto
+//go:generate ./protoc_gen.sh service.proto

@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iheanyi/twirptest"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/mocktracer"
 	"github.com/stretchr/testify/assert"
+	"github.com/twirp-ecosystem/twirptest"
 	"github.com/twitchtv/twirp"
 )
 

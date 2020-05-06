@@ -20,6 +20,7 @@ func TestTraceHTTPClient(t *testing.T) {
 		desc         string
 		errExpected  bool
 		service      twirptest.Haberdasher
+		clientOpts   []TraceOption
 		expectedTags func(*httptest.Server) map[string]interface{}
 	}{
 		{
@@ -49,13 +50,27 @@ func TestTraceHTTPClient(t *testing.T) {
 				}
 			},
 		},
+		{
+			desc:        "does not report client errors in span if correct option is set",
+			errExpected: true,
+			service:     twirptest.ErroringHatmaker(twirp.NotFoundError("not found")),
+			clientOpts:  []TraceOption{IncludeClientErrors(false)},
+			expectedTags: func(server *httptest.Server) map[string]interface{} {
+				return map[string]interface{}{
+					"span.kind":        ext.SpanKindEnum("client"),
+					"http.status_code": uint16(404),
+					"http.url":         fmt.Sprintf("%s/twirp/twirptest.Haberdasher/MakeHat", server.URL),
+					"http.method":      "POST",
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			tracer := setupMockTracer()
 			hooks := NewOpenTracingHooks(tracer)
-			server, client := TraceServerAndTraceClient(tt.service, hooks, tracer)
+			server, client := TraceServerAndTraceClient(tt.service, hooks, tracer, tt.clientOpts...)
 			defer server.Close()
 
 			_, err := client.MakeHat(context.Background(), &twirptest.Size{})
@@ -76,8 +91,8 @@ func TestTraceHTTPClient(t *testing.T) {
 	}
 }
 
-func TraceServerAndTraceClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks, tracer opentracing.Tracer) (*httptest.Server, twirptest.Haberdasher) {
+func TraceServerAndTraceClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks, tracer opentracing.Tracer, opts ...TraceOption) (*httptest.Server, twirptest.Haberdasher) {
 	s := httptest.NewServer(WithTraceContext(twirptest.NewHaberdasherServer(h, hooks), tracer))
-	c := twirptest.NewHaberdasherProtobufClient(s.URL, NewTraceHTTPClient(http.DefaultClient, tracer))
+	c := twirptest.NewHaberdasherProtobufClient(s.URL, NewTraceHTTPClient(http.DefaultClient, tracer, opts...))
 	return s, c
 }

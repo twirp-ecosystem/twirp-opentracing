@@ -22,15 +22,29 @@ type tracingInfoKey struct{}
 
 // NewOpenTracingHooks provides a twirp.ServerHooks struct which records
 // OpenTracing spans.
-func NewOpenTracingHooks(tracer ot.Tracer) *twirp.ServerHooks {
+func NewOpenTracingHooks(tracer ot.Tracer, opts ...HookOpt) *twirp.ServerHooks {
 	hooks := &twirp.ServerHooks{
 		RequestReceived: startTraceSpan(tracer),
 		RequestRouted:   handleRequestRouted,
 		ResponseSent:    finishTrace,
-		Error:           handleError,
+		Error:           handleError(true),
+	}
+
+	for _, opt := range opts {
+		opt(hooks)
 	}
 
 	return hooks
+}
+
+type HookOpt func(h *twirp.ServerHooks)
+
+// WithUserErr, if set, will report client errors (4xx) as errors in the server span.
+// If not set, only 5xx status will be reported as erroneous.
+func WithUserErr(withUserError bool) HookOpt {
+	return func(h *twirp.ServerHooks) {
+		h.Error = handleError(withUserError)
+	}
 }
 
 func startTraceSpan(tracer ot.Tracer) func(context.Context) (context.Context, error) {
@@ -100,14 +114,19 @@ func WithTraceContext(base http.Handler, tracer ot.Tracer) http.Handler {
 	})
 }
 
-func handleError(ctx context.Context, err twirp.Error) context.Context {
-	span := ot.SpanFromContext(ctx)
-	if span != nil {
-		span.SetTag("error", true)
-		span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Msg()))
-	}
+func handleError(withUserErr bool) func(ctx context.Context, err twirp.Error) context.Context {
+	return func(ctx context.Context, err twirp.Error) context.Context {
+		span := ot.SpanFromContext(ctx)
+		statusCode := twirp.ServerHTTPStatusFromErrorCode(err.Code())
+		if span != nil {
+			if withUserErr || statusCode >= 500 {
+				span.SetTag("error", true)
+			}
+			span.LogFields(otlog.String("event", "error"), otlog.String("message", err.Msg()))
+		}
 
-	return ctx
+		return ctx
+	}
 }
 
 func extractSpanCtx(ctx context.Context, tracer ot.Tracer) (ot.SpanContext, error) {

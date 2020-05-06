@@ -20,18 +20,36 @@ type HTTPClient interface {
 type TraceHTTPClient struct {
 	client HTTPClient
 	tracer opentracing.Tracer
+	withUserErr bool
 }
 
 var _ HTTPClient = (*TraceHTTPClient)(nil)
 
-func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer) *TraceHTTPClient {
+func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer, opts ...ClientOpt) *TraceHTTPClient {
 	if client == nil {
 		client = http.DefaultClient
 	}
 
-	return &TraceHTTPClient{
+	traceClient := &TraceHTTPClient{
 		client: client,
 		tracer: tracer,
+		withUserErr: true,
+	}
+
+	for _, opt := range opts {
+		opt(traceClient)
+	}
+
+	return traceClient
+}
+
+type ClientOpt func(client *TraceHTTPClient)
+
+// WithClientUserErr, if set, will report client errors (4xx) as errors in the span.
+// If not set, only 5xx status will be reported as erroneous to the tracer.
+func WithClientUserErr(withUserError bool) ClientOpt {
+	return func(client *TraceHTTPClient) {
+		client.withUserErr = withUserError
 	}
 }
 
@@ -65,9 +83,9 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	}
 	ext.HTTPStatusCode.Set(span, uint16(res.StatusCode))
 
-	// Check for error codes greater than 400, if we have these, then we should
-	// mark the span as an error.
-	if res.StatusCode >= 400 {
+	// Check for error codes greater than 400 if withUserErr is set and codes greater than 500 if not,
+	// and mark the span as an error if appropriate.
+	if res.StatusCode >= 400 && c.withUserErr || res.StatusCode >= 500 {
 		span.SetTag("error", true)
 	}
 

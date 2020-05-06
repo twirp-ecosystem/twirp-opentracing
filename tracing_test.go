@@ -21,6 +21,7 @@ func TestTracingHooks(t *testing.T) {
 	tests := []struct {
 		desc         string
 		service      twirptest.Haberdasher
+		hookOpts     []HookOpt
 		expectedTags map[string]interface{}
 		expectedLogs []mocktracer.MockLogRecord
 		errExpected  bool
@@ -66,12 +67,41 @@ func TestTracingHooks(t *testing.T) {
 			},
 			errExpected: true,
 		},
+		{
+			desc:    "user error should be not reported as an erroneous span when correct option is set",
+			service: twirptest.ErroringHatmaker(twirp.NotFoundError("not found")),
+			hookOpts: []HookOpt{WithUserErr(false)},
+			expectedTags: map[string]interface{}{
+				"package":          "twirptest",
+				"component":        "twirp",
+				"service":          "Haberdasher",
+				"span.kind":        serverType,
+				"http.status_code": int64(404),
+			},
+			expectedLogs: []mocktracer.MockLogRecord{
+				{
+					Fields: []mocktracer.MockKeyValue{
+						{
+							Key:         "event",
+							ValueKind:   reflect.String,
+							ValueString: "error",
+						},
+						{
+							Key:         "message",
+							ValueKind:   reflect.String,
+							ValueString: "not found",
+						},
+					},
+				},
+			},
+			errExpected: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.desc, func(t *testing.T) {
 			tracer := setupMockTracer()
-			hooks := NewOpenTracingHooks(tracer)
+			hooks := NewOpenTracingHooks(tracer, tt.hookOpts...)
 
 			server, client := serverAndClient(tt.service, hooks)
 			defer server.Close()

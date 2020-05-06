@@ -54,7 +54,7 @@ func TestTraceHTTPClient(t *testing.T) {
 			desc:        "does not report client errors in span if correct option is set",
 			errExpected: true,
 			service:     twirptest.ErroringHatmaker(twirp.NotFoundError("not found")),
-			clientOpts: []ClientOption{IncludeUserErrors(false)},
+			clientOpts:  []ClientOption{IncludeUserErrors(false)},
 			expectedTags: func(server *httptest.Server) map[string]interface{} {
 				return map[string]interface{}{
 					"span.kind":        ext.SpanKindEnum("client"),

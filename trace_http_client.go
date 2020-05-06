@@ -20,7 +20,7 @@ type HTTPClient interface {
 type TraceHTTPClient struct {
 	client HTTPClient
 	tracer opentracing.Tracer
-	opts *ClientOptions
+	opts   *ClientOptions
 }
 
 // ClientOptions is a struct containing tracing client configuration options. Options are exposed as functional options
@@ -58,7 +58,7 @@ func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer, opts ...Cl
 	return &TraceHTTPClient{
 		client: client,
 		tracer: tracer,
-		opts: clientOpts,
+		opts:   clientOpts,
 	}
 }
 

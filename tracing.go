@@ -22,27 +22,27 @@ type tracingInfoKey struct{}
 
 type TraceServerHooks struct {
 	Tracer ot.Tracer
-	opts   *TraceServerOptions
+	opts   *TraceOptions
 }
 
-type TraceServerOptions struct {
+type TraceOptions struct {
 	includeClientErrors bool
 }
 
-type TraceServerOption func(serverOpts *TraceServerOptions)
+type TraceOption func(opts *TraceOptions)
 
 // IncludeClientErrors, if set, will report client errors (4xx) as errors in the server span.
 // If not set, only 5xx status will be reported as erroneous.
-func IncludeClientErrors(includeClientErrors bool) TraceServerOption {
-	return func(serverOpts *TraceServerOptions) {
-		serverOpts.includeClientErrors = includeClientErrors
+func IncludeClientErrors(includeClientErrors bool) TraceOption {
+	return func(opts *TraceOptions) {
+		opts.includeClientErrors = includeClientErrors
 	}
 }
 
 // NewOpenTracingHooks provides a twirp.ServerHooks struct which records
 // OpenTracing spans.
-func NewOpenTracingHooks(tracer ot.Tracer, opts ...TraceServerOption) *twirp.ServerHooks {
-	serverOpts := &TraceServerOptions{
+func NewOpenTracingHooks(tracer ot.Tracer, opts ...TraceOption) *twirp.ServerHooks {
+	serverOpts := &TraceOptions{
 		includeClientErrors: true,
 	}
 

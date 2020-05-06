@@ -20,7 +20,7 @@ func TestTraceHTTPClient(t *testing.T) {
 		desc         string
 		errExpected  bool
 		service      twirptest.Haberdasher
-		clientOpts   []ClientOpt
+		clientOpts   []ClientOption
 		expectedTags func(*httptest.Server) map[string]interface{}
 	}{
 		{
@@ -54,7 +54,7 @@ func TestTraceHTTPClient(t *testing.T) {
 			desc:        "does not report client errors in span if correct option is set",
 			errExpected: true,
 			service:     twirptest.ErroringHatmaker(twirp.NotFoundError("not found")),
-			clientOpts: []ClientOpt{WithClientUserErr(false)},
+			clientOpts: []ClientOption{IncludeUserErrors(false)},
 			expectedTags: func(server *httptest.Server) map[string]interface{} {
 				return map[string]interface{}{
 					"span.kind":        ext.SpanKindEnum("client"),
@@ -91,7 +91,7 @@ func TestTraceHTTPClient(t *testing.T) {
 	}
 }
 
-func TraceServerAndTraceClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks, tracer opentracing.Tracer, opts ...ClientOpt) (*httptest.Server, twirptest.Haberdasher) {
+func TraceServerAndTraceClient(h twirptest.Haberdasher, hooks *twirp.ServerHooks, tracer opentracing.Tracer, opts ...ClientOption) (*httptest.Server, twirptest.Haberdasher) {
 	s := httptest.NewServer(WithTraceContext(twirptest.NewHaberdasherServer(h, hooks), tracer))
 	c := twirptest.NewHaberdasherProtobufClient(s.URL, NewTraceHTTPClient(http.DefaultClient, tracer, opts...))
 	return s, c

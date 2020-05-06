@@ -20,36 +20,45 @@ type HTTPClient interface {
 type TraceHTTPClient struct {
 	client HTTPClient
 	tracer opentracing.Tracer
-	withUserErr bool
+	opts *ClientOptions
+}
+
+// ClientOptions is a struct containing tracing client configuration options. Options are exposed as functional options
+// which can be set in the NewTraceHTTPClient call
+type ClientOptions struct {
+	includeUserErrors bool
+}
+
+// ClientOption is a functional option used to configure a TraceHTTPClient
+type ClientOption func(clientOpts *ClientOptions)
+
+// IncludeUserErrors, if set, will report client errors (4xx) as errors in the span.
+// If not set, only 5xx status will be reported as erroneous to the tracer.
+func IncludeUserErrors(includeUserErrors bool) ClientOption {
+	return func(clientOpts *ClientOptions) {
+		clientOpts.includeUserErrors = includeUserErrors
+	}
 }
 
 var _ HTTPClient = (*TraceHTTPClient)(nil)
 
-func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer, opts ...ClientOpt) *TraceHTTPClient {
+func NewTraceHTTPClient(client HTTPClient, tracer opentracing.Tracer, opts ...ClientOption) *TraceHTTPClient {
 	if client == nil {
 		client = http.DefaultClient
 	}
 
-	traceClient := &TraceHTTPClient{
-		client: client,
-		tracer: tracer,
-		withUserErr: true,
+	clientOpts := &ClientOptions{
+		includeUserErrors: true,
 	}
 
 	for _, opt := range opts {
-		opt(traceClient)
+		opt(clientOpts)
 	}
 
-	return traceClient
-}
-
-type ClientOpt func(client *TraceHTTPClient)
-
-// WithClientUserErr, if set, will report client errors (4xx) as errors in the span.
-// If not set, only 5xx status will be reported as erroneous to the tracer.
-func WithClientUserErr(withUserError bool) ClientOpt {
-	return func(client *TraceHTTPClient) {
-		client.withUserErr = withUserError
+	return &TraceHTTPClient{
+		client: client,
+		tracer: tracer,
+		opts: clientOpts,
 	}
 }
 
@@ -85,7 +94,7 @@ func (c *TraceHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 	// Check for error codes greater than 400 if withUserErr is set and codes greater than 500 if not,
 	// and mark the span as an error if appropriate.
-	if res.StatusCode >= 400 && c.withUserErr || res.StatusCode >= 500 {
+	if res.StatusCode >= 400 && c.opts.includeUserErrors || res.StatusCode >= 500 {
 		span.SetTag("error", true)
 	}
 

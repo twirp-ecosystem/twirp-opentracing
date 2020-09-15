@@ -28,10 +28,12 @@ type TraceServerHooks struct {
 type TraceOptions struct {
 	includeClientErrors bool
 	tags                []TraceTag
+	ctxTagFn            func(ctx context.Context) []TraceTag
 }
 
 // TraceTag represents a single span tag.
 type TraceTag struct {
+	// Key defines the span's tag key.
 	Key string
 
 	// Value defines the span's tag value. Values can be numeric types, strings, or
@@ -54,6 +56,16 @@ func IncludeClientErrors(includeClientErrors bool) TraceOption {
 func WithTags(tags ...TraceTag) TraceOption {
 	return func(opts *TraceOptions) {
 		opts.tags = tags
+	}
+}
+
+// WithContextTags defines a function that returns set of trace tags. This is
+// useful to extract values from the request ctx and return a set of tags that
+// are set on the span. The function is used during the `RequestReceived`
+// server hook.
+func WithContextTags(fn func(ctx context.Context) []TraceTag) TraceOption {
+	return func(opts *TraceOptions) {
+		opts.ctxTagFn = fn
 	}
 }
 
@@ -107,6 +119,12 @@ func (t *TraceServerHooks) startTraceSpan(ctx context.Context) (context.Context,
 
 		if len(t.opts.tags) != 0 {
 			for _, tag := range t.opts.tags {
+				span.SetTag(tag.Key, tag.Value)
+			}
+		}
+
+		if t.opts.ctxTagFn != nil {
+			for _, tag := range t.opts.ctxTagFn(ctx) {
 				span.SetTag(tag.Key, tag.Value)
 			}
 		}

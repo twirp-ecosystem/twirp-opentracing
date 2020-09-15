@@ -27,6 +27,16 @@ type TraceServerHooks struct {
 
 type TraceOptions struct {
 	includeClientErrors bool
+	tags                []TraceTag
+}
+
+// TraceTag represents a single span tag.
+type TraceTag struct {
+	Key string
+
+	// Value defines the span's tag value. Values can be numeric types, strings, or
+	// bools.
+	Value interface{}
 }
 
 type TraceOption func(opts *TraceOptions)
@@ -36,6 +46,14 @@ type TraceOption func(opts *TraceOptions)
 func IncludeClientErrors(includeClientErrors bool) TraceOption {
 	return func(opts *TraceOptions) {
 		opts.includeClientErrors = includeClientErrors
+	}
+}
+
+// WithTags defines tags to be added to each outoing span by default.  If there
+// is a pre-existing tag set for `key`, it is overwritten.
+func WithTags(tags ...TraceTag) TraceOption {
+	return func(opts *TraceOptions) {
+		opts.tags = tags
 	}
 }
 
@@ -85,6 +103,12 @@ func (t *TraceServerHooks) startTraceSpan(ctx context.Context) (context.Context,
 
 		if serviceName, ok := twirp.ServiceName(ctx); ok {
 			span.SetTag("service", serviceName)
+		}
+
+		if len(t.opts.tags) != 0 {
+			for _, tag := range t.opts.tags {
+				span.SetTag(tag.Key, tag.Value)
+			}
 		}
 	}
 

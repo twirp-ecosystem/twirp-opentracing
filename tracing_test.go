@@ -21,7 +21,7 @@ func TestTracingHooks(t *testing.T) {
 	tests := []struct {
 		desc         string
 		service      twirptest.Haberdasher
-		traceOpts   []TraceOption
+		traceOpts    []TraceOption
 		expectedTags map[string]interface{}
 		expectedLogs []mocktracer.MockLogRecord
 		errExpected  bool
@@ -35,6 +35,26 @@ func TestTracingHooks(t *testing.T) {
 				"service":          "Haberdasher",
 				"span.kind":        serverType,
 				"http.status_code": int64(200),
+			},
+			expectedLogs: []mocktracer.MockLogRecord{},
+		},
+		{
+			desc:    "set tags and logs with additional tags",
+			service: twirptest.NoopHatmaker(),
+			traceOpts: []TraceOption{
+				WithTags(
+					TraceTag{"foo", "bar"},
+					TraceTag{"city", "tokyo"},
+				),
+			},
+			expectedTags: map[string]interface{}{
+				"package":          "twirptest",
+				"component":        "twirp",
+				"service":          "Haberdasher",
+				"span.kind":        serverType,
+				"http.status_code": int64(200),
+				"foo":              "bar",
+				"city":             "tokyo",
 			},
 			expectedLogs: []mocktracer.MockLogRecord{},
 		},
@@ -68,8 +88,8 @@ func TestTracingHooks(t *testing.T) {
 			errExpected: true,
 		},
 		{
-			desc:       "user error should be not reported as an erroneous span when correct option is set",
-			service:    twirptest.ErroringHatmaker(twirp.NotFoundError("not found")),
+			desc:      "user error should be not reported as an erroneous span when correct option is set",
+			service:   twirptest.ErroringHatmaker(twirp.NotFoundError("not found")),
 			traceOpts: []TraceOption{IncludeClientErrors(false)},
 			expectedTags: map[string]interface{}{
 				"package":          "twirptest",

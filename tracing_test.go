@@ -59,6 +59,28 @@ func TestTracingHooks(t *testing.T) {
 			expectedLogs: []mocktracer.MockLogRecord{},
 		},
 		{
+			desc:    "set tags and logs with context tags",
+			service: twirptest.NoopHatmaker(),
+			traceOpts: []TraceOption{
+				WithContextTags(func(ctx context.Context) []TraceTag {
+					return []TraceTag{
+						{"foo", "bar"},
+						{"city", "tokyo"},
+					}
+				}),
+			},
+			expectedTags: map[string]interface{}{
+				"package":          "twirptest",
+				"component":        "twirp",
+				"service":          "Haberdasher",
+				"span.kind":        serverType,
+				"http.status_code": int64(200),
+				"foo":              "bar",
+				"city":             "tokyo",
+			},
+			expectedLogs: []mocktracer.MockLogRecord{},
+		},
+		{
 			desc:    "set tags and logs with operation name for an errored request",
 			service: twirptest.ErroringHatmaker(errors.New("test")),
 			expectedTags: map[string]interface{}{

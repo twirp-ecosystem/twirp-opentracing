@@ -19,7 +19,7 @@ var tracer opentracing.Tracer = ...
 
 hooks := NewOpenTracingHooks(tracer)
 service := haberdasherserver.New()
-server := WithTraceContext(haberdasher.NewHaberdasherServer(service, hooks), tracer)
+server := WithTraceContext(haberdasher.NewHaberdasherServer(service, twirp.WithServerHooks(hooks)), tracer)
 log.Fatal(http.ListenAndServe(":8080", server))
 ```
 
